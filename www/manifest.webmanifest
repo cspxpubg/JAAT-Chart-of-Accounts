@@ -1,0 +1,17 @@
+
+{
+  "name": "JAAT Chart of Accounts",
+  "short_name": "JAAT",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#08665b",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "JAAT_App_Icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
