@@ -1,0 +1,7 @@
+
+{
+  "appId": "com.jaat.chartofaccounts",
+  "appName": "JAAT Chart of Accounts",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
