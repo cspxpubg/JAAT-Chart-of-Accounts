@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#08665b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>JAAT | Chart of Accounts</title>
+<link rel="icon" type="image/png" href="JAAT_App_Icon_512.png"><link rel="apple-touch-icon" href="JAAT_App_Icon_512.png">
+<style>
+:root{--bg:#f3f6f4;--panel:#fff;--ink:#17231c;--muted:#718078;--green:#16794b;--green2:#e7f5ec;--line:#e4ebe6;--amber:#a7650b;--red:#b33b3b;--shadow:0 8px 28px #183b2410}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:#123d2b;color:white;padding:20px max(18px,calc((100% - 1180px)/2));display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+header h1{font-size:21px;margin:0}header p{margin:3px 0 0;color:#c7dfd1;font-size:13px}
+.wrap{max-width:1180px;margin:auto;padding:20px}
+nav{display:flex;gap:8px;overflow:auto;padding:4px 0 16px}
+nav button,.btn{border:0;border-radius:10px;padding:10px 14px;background:#e5eee8;color:#1e5037;font-weight:650;cursor:pointer;white-space:nowrap}
+nav button.active,.btn.primary{background:var(--green);color:#fff}
+.btn.light{background:#eef3ef;color:#315541}.btn.danger{background:#fff0f0;color:var(--red)}.btn.small{padding:7px 10px;font-size:13px}
+main section{display:none}main section.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:16px}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px;box-shadow:var(--shadow)}
+.metric .label{color:var(--muted);font-size:13px}.metric strong{display:block;font-size:27px;margin-top:4px}
+.panel{margin-bottom:15px}.panel h2{font-size:17px;margin:0 0 13px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.formgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+label{display:block;color:#52635a;font-size:12px;font-weight:650;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #d8e2db;border-radius:9px;background:white;color:var(--ink);font:inherit;min-width:0}
+input[type=file]{padding:7px}input[type=checkbox]{width:auto}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-weight:700;background:#f8faf8}
+.pill{display:inline-block;border-radius:30px;padding:4px 8px;font-size:11px;font-weight:700;background:#edf2ee;color:#486052}.pill.green{background:#e4f5e9;color:#187246}.pill.amber{background:#fff3dd;color:#9a610d}
+.employee{display:flex;align-items:center;gap:10px}.avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#e4eee7;display:grid;place-items:center;font-weight:800;color:#39714e}
+.taskrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.taskrow:last-child{border:0}.taskrow .taskname{flex:1}
+.progress{height:9px;background:#e9efeb;border-radius:20px;overflow:hidden}.progress span{height:100%;display:block;background:#23945a}
+.muted{color:var(--muted);font-size:13px}.empty{text-align:center;color:var(--muted);padding:24px}
+.hidden{display:none!important}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.formgrid{grid-template-columns:1fr 1fr}.wrap{padding:13px}header{padding:17px}.metric strong{font-size:23px}}
+@media(max-width:440px){.formgrid{grid-template-columns:1fr}.grid{gap:8px}.card,.panel{padding:13px}}
+
+.attendance-person{display:flex;align-items:center;gap:10px}.attendance-person .avatar{width:48px;height:48px}.att-actions{display:flex;gap:7px;flex-wrap:wrap}.secure-note{background:#fff8e8;border:1px solid #f0dfb8;padding:10px;border-radius:10px;color:#77520e;font-size:13px}.balance-big{font-size:28px;font-weight:800;color:var(--green)}
+@media(max-width:600px){.tablewrap table{min-width:560px}}
+
+/* Refined visual theme and mobile-first attendance layout */
+:root{--bg:#f2f6f3;--panel:#ffffff;--ink:#17291f;--muted:#718178;--green:#176b43;--green2:#e6f4eb;--line:#e0e9e3;--amber:#a7650b;--red:#b33b3b;--shadow:0 10px 30px rgba(19,55,34,.075)}
+body{background:linear-gradient(180deg,#eaf3ed 0,#f5f7f5 220px);}
+header{background:linear-gradient(120deg,#103d2a,#1c7048);box-shadow:0 5px 22px #123d2b25;padding-top:22px;padding-bottom:22px}
+header h1{letter-spacing:.2px;font-size:23px}
+.wrap{max-width:1120px;padding:18px 20px 28px}
+nav{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:9px;padding:12px;margin:0 0 18px;background:#ffffffd9;border:1px solid #e0e9e3;border-radius:17px;box-shadow:var(--shadow);overflow:visible}
+nav button{flex:1 1 auto;min-height:42px;padding:10px 13px;border:1px solid #e3ece6;border-radius:12px;background:#f1f6f2;color:#315a42;transition:background .15s,transform .15s}
+nav button.active{background:linear-gradient(135deg,#176b43,#23945c);color:white;border-color:transparent;box-shadow:0 5px 13px #176b432c}
+nav button:active,.btn:active{transform:scale(.98)}
+.card,.panel{border-radius:17px;border-color:#e4ece6;box-shadow:var(--shadow)}
+.panel{padding:19px}
+.btn{border-radius:11px;min-height:38px}
+.btn.primary{background:linear-gradient(135deg,#176b43,#23945c)}
+input,select,textarea{border-radius:11px;border-color:#dce7df}
+.attendance-screen{display:none}.dashboard-empty{min-height:12px;padding:0}main section.active.attendance-screen{display:block}
+.attendance-datebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-bottom:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.attendance-datebar label{margin:0;color:#315a42;font-size:14px}
+.attendance-datebar input{max-width:175px;font-weight:650}
+.attendance-list{display:flex;flex-direction:column;gap:9px}
+.attendance-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#fff;border:1px solid #e2ebe5;border-radius:15px;box-shadow:0 4px 14px rgba(19,55,34,.045);min-width:0}
+.attendance-person{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
+.attendance-person .avatar{width:42px;height:42px;flex:0 0 42px;border:2px solid #e6f1e9}
+.attendance-identity{display:flex;flex-direction:column;gap:2px;min-width:0;line-height:1.25}
+.attendance-identity b{font-size:13px;overflow-wrap:anywhere}
+.attendance-identity span{font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.att-actions{display:flex;gap:6px;flex:0 0 auto;flex-wrap:nowrap;margin:0}
+.att-actions .btn{min-width:62px;padding:7px 9px;font-size:12px;min-height:35px}
+.attendance-empty{background:#fff;border:1px solid var(--line);border-radius:15px}
+@media(max-width:600px){
+ .wrap{padding:10px 10px 22px}header{padding:15px 14px}header h1{font-size:20px}
+ nav{position:sticky;top:0;z-index:20;display:flex!important;flex-wrap:nowrap!important;gap:8px;padding:10px;margin-bottom:14px;overflow-x:auto!important;overflow-y:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+ nav button{flex:0 0 auto!important;width:auto;min-width:max-content;white-space:nowrap;font-size:13px;padding:10px 14px;min-height:42px;line-height:1.2}
+ .attendance-datebar{padding:11px 12px;margin-bottom:9px}
+ .attendance-card{padding:9px;gap:6px;border-radius:13px}
+ .attendance-person{gap:7px}
+ .attendance-person .avatar{width:36px;height:36px;flex-basis:36px}
+ .attendance-identity b{font-size:12px}
+ .attendance-identity span{font-size:10px}
+ .att-actions{gap:4px}
+ .att-actions .btn{min-width:55px;padding:6px 7px;font-size:11px}
+ .panel{padding:13px}
+}
+@media(max-width:350px){.attendance-card{gap:4px;padding:7px}.attendance-person .avatar{width:32px;height:32px;flex-basis:32px}.att-actions .btn{min-width:49px;padding:5px 5px;font-size:10px}}
+
+@media(max-width:600px){#payroll .tablewrap{overflow-x:auto}#payroll table{min-width:760px}}
+
+.header-left{display:flex;align-items:center;gap:14px;min-width:0}
+.hamburger{width:44px;height:44px;flex:0 0 44px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;border:1px solid #ffffff55;border-radius:12px;background:#ffffff18;cursor:pointer}
+.hamburger span{display:block;width:21px;height:2px;border-radius:4px;background:#fff}
+.app-menu{display:none;position:sticky;top:8px;z-index:30;margin:12px 0 18px;padding:12px;background:#fff;border:1px solid #dce8df;border-radius:17px;box-shadow:0 14px 34px rgba(15,55,32,.16);grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.app-menu.open{display:grid}
+.app-menu button{min-width:0;white-space:normal;text-align:left;min-height:44px}
+@media(min-width:761px){.app-menu{grid-template-columns:repeat(3,minmax(0,1fr));max-width:760px}}
+@media(max-width:440px){.header-left{gap:10px}.hamburger{width:40px;height:40px;flex-basis:40px}.app-menu{padding:9px;gap:6px}.app-menu button{font-size:12px;padding:9px 8px}}
+
+/* Chart Accounts / Family Accounts-inspired wide cash-book presentation */
+:root{--bg:#f1f4f2;--green:#08665b;--green2:#e8f5e9;--line:#dedfdd;--shadow:0 4px 14px rgba(0,0,0,.055)}
+body{background:#f1f4f2;color:#303632}
+header{background:#fff;color:#075f55;box-shadow:none;border-bottom:1px solid #e5e8e6;padding:17px max(18px,calc((100% - 1420px)/2))}
+header h1{font-size:25px;color:#075f55}header p{color:#6f7772}
+header .pill{background:#e5f4ed!important;color:#08665b!important}
+.wrap{max-width:1460px;padding:16px 22px 28px}
+nav{background:#e7e0d9;border:0;border-radius:15px;box-shadow:none;padding:9px;gap:6px;margin-bottom:16px}
+nav button{background:transparent;border:0;border-radius:10px;color:#4c514e;min-height:46px;font-size:15px}
+nav button.active{background:#08665b;color:#fff;box-shadow:none}
+.panel,.card{border:1px solid #dedfdd;border-radius:15px;box-shadow:0 3px 12px rgba(0,0,0,.05);padding:18px}
+.panel h2{font-size:19px;color:#3e4541}
+input,select,textarea{border:1px solid #d2d4d2;border-radius:10px;padding:12px 13px}
+.btn{border-radius:9px}.btn.primary{background:#08665b}.btn.light{background:#eef1ef;color:#33423a}
+.cash-summary{background:#e8f5e9;border:1px solid #bfe2c5;border-radius:15px;padding:18px 22px;margin:0 0 16px;font-size:18px}
+.cash-summary .cashline{padding:5px 0}.cash-summary b{font-size:18px}.cash-summary strong{font-size:24px;color:#08665b;font-weight:500}
+.cash-layout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.cash-layout .panel{margin-bottom:0}.cash-layout .formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#cash .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:700px){.wrap{padding:10px}.cash-layout{grid-template-columns:1fr}.cash-layout .formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}header h1{font-size:21px}}
+@media(max-width:440px){.cash-layout .formgrid{grid-template-columns:1fr}.cash-summary{padding:13px;font-size:15px}.cash-summary b{font-size:15px}.cash-summary strong{font-size:20px}}
+
+/* Family Accounts reference: one horizontal tab row, swipe/scroll left and right */
+.app-menu{display:flex!important;flex-wrap:nowrap!important;position:sticky!important;top:0!important;z-index:30!important;width:100%!important;max-width:none!important;margin:12px 0 20px!important;padding:9px!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;background:#e7e0d9!important;border:0!important;border-radius:15px!important;box-shadow:none!important;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.app-menu.open{display:flex!important}
+#menuToggle{display:none!important}
+.app-menu button{flex:0 0 auto!important;width:auto!important;min-width:max-content!important;white-space:nowrap!important;text-align:center!important;line-height:1.2!important;padding:10px 18px!important;min-height:46px!important;font-size:15px!important;background:transparent!important;border:0!important;border-radius:10px!important;color:#4c514e!important}
+.app-menu button.active{background:#08665b!important;color:#fff!important}
+header .header-left{padding-left:0}
+#cash .cash-summary{margin-bottom:16px}
+#cash .cash-layout{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+#cash .cash-layout>.panel{height:100%}
+#cash .cash-layout .formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#cash .category-manager{margin-bottom:16px;background:#f8faf9}
+#cash .category-manager .category-add-row{display:grid;grid-template-columns:190px minmax(180px,1fr) auto;gap:12px;align-items:center}
+#cash .category-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#cash .category-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid #cfd7d2;border-radius:9px;background:#eef1ef;font-weight:650;font-size:13px}
+#cash .category-chip button{border:0;background:transparent;color:#c22;font-weight:800;padding:0 2px;cursor:pointer}
+@media(max-width:760px){.app-menu{position:static!important}#cash .cash-layout{grid-template-columns:1fr}}
+@media(max-width:600px){.app-menu button{font-size:14px!important;padding:10px 15px!important}#cash .category-manager .category-add-row{grid-template-columns:1fr}#cash .cash-layout .formgrid{grid-template-columns:1fr}}
+
+
+/* Final reference layout: Family Accounts-style Cash Book proportions */
+body{background:#f1f3f2;color:#303632}
+header{
+  max-width:1120px;margin:18px auto 0;padding:20px 28px;
+  background:#fff;color:#075f55;border-radius:22px 22px 0 0;
+  border:0;border-bottom:1px solid #e5e8e6;box-shadow:none;
+}
+header h1{font-size:25px;color:#075f55;line-height:1.25}
+header p{color:#727873;font-size:14px;margin-top:5px}
+header .pill{background:#16a4b8!important;color:#fff!important;border-radius:8px;padding:10px 15px;font-size:13px}
+.wrap{
+  max-width:1120px;margin:0 auto 18px;padding:12px 28px 28px;
+  background:#fff;border-radius:0 0 22px 22px;min-height:calc(100vh - 115px);
+}
+.app-menu{
+  position:sticky!important;top:0!important;z-index:30!important;
+  display:flex!important;flex-wrap:nowrap!important;gap:8px!important;
+  width:100%!important;max-width:none!important;margin:0 0 18px!important;
+  padding:10px!important;overflow-x:auto!important;overflow-y:hidden!important;
+  white-space:nowrap!important;background:#e7e0d9!important;border:0!important;
+  border-radius:15px!important;box-shadow:none!important;
+  scrollbar-width:thin;-webkit-overflow-scrolling:touch;
+}
+.app-menu.open{display:flex!important}
+#menuToggle{display:none!important}
+.app-menu button{
+  flex:0 0 auto!important;width:auto!important;min-width:max-content!important;
+  min-height:46px!important;padding:10px 18px!important;font-size:15px!important;
+  line-height:1.2!important;border:0!important;border-radius:10px!important;
+  background:transparent!important;color:#4c514e!important;white-space:nowrap!important;
+}
+.app-menu button.active{background:#08665b!important;color:#fff!important}
+#cash>h2{font-size:23px!important;color:#08665b!important;margin:4px 0 16px!important}
+#cash .cash-summary{
+  background:#e8f5e9;border:1px solid #bfe2c5;border-radius:15px;
+  padding:18px 22px;margin:0 0 16px;font-size:18px;
+}
+#cash .cash-summary .cashline{padding:5px 0}
+#cash .cash-summary b{font-size:18px}
+#cash .cash-summary strong{font-size:24px;color:#08665b;font-weight:500}
+#cash .category-manager{margin:0 0 16px;background:#f8faf9;padding:18px 22px}
+#cash .category-manager h2{font-size:19px;margin:0 0 13px;color:#454b47}
+#cash .category-manager .category-add-row{
+  display:grid;grid-template-columns:190px minmax(180px,1fr) 72px;
+  gap:12px;align-items:center;
+}
+#cash .category-manager .category-add-row input,
+#cash .category-manager .category-add-row select{min-height:58px;font-size:16px;padding:12px 14px}
+#cash .category-manager .category-add-row .btn{min-height:58px;font-size:15px}
+#cash .category-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+#cash .category-chip{font-size:14px;padding:6px 10px}
+#cash .cash-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+#cash .cash-layout>.panel{height:auto;margin:0;padding:20px 22px}
+#cash .cash-layout .panel h2{font-size:19px;margin:0 0 13px;color:#454b47}
+#cash .cash-layout .formgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#cash .cash-layout .formgrid>div:nth-child(3),
+#cash .cash-layout .formgrid>div:nth-child(6){grid-column:1/-1}
+#cash .cash-layout label{font-size:14px;margin-bottom:5px}
+#cash .cash-layout input,#cash .cash-layout select{min-height:58px;padding:12px 14px;font-size:16px}
+#cash .cash-layout .btn{min-height:44px;padding:10px 17px;font-size:15px}
+#cash .cash-layout .actions{margin-top:12px;gap:8px}
+#cash .cash-layout .muted{font-size:14px}
+#cash .cash-layout .tablewrap th,#cash .cash-layout .tablewrap td{padding:9px 9px;font-size:13px}
+@media(max-width:760px){
+  header{margin:12px 10px 0;padding:16px 18px;border-radius:18px 18px 0 0}
+  header h1{font-size:22px}
+  .wrap{margin:0 10px 12px;padding:10px 18px 20px;border-radius:0 0 18px 18px}
+  .app-menu{position:sticky!important;top:0!important;padding:9px!important;gap:6px!important;margin-bottom:14px!important}
+  .app-menu button{font-size:14px!important;padding:10px 15px!important;min-height:44px!important}
+  #cash .cash-summary{padding:15px 17px;font-size:16px}
+  #cash .cash-summary b{font-size:16px}
+  #cash .cash-summary strong{font-size:21px}
+  #cash .category-manager,#cash .cash-layout>.panel{padding:15px 17px}
+  #cash .category-manager .category-add-row{grid-template-columns:150px minmax(0,1fr) 62px;gap:8px}
+  #cash .category-manager .category-add-row input,
+  #cash .category-manager .category-add-row select{min-height:52px;font-size:15px;padding:10px}
+  #cash .category-manager .category-add-row .btn{min-height:52px;padding:8px;font-size:14px}
+  #cash .cash-layout .formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #cash .cash-layout input,#cash .cash-layout select{min-height:52px;font-size:15px}
+}
+@media(max-width:480px){
+  header{padding:14px 14px}
+  header h1{font-size:20px}
+  header .pill{font-size:11px;padding:8px 10px}
+  .wrap{padding:9px 12px 16px}
+  .app-menu button{font-size:13px!important;padding:9px 13px!important;min-height:41px!important}
+  #cash .cash-summary{padding:13px 14px}
+  #cash .cash-summary b{font-size:15px}
+  #cash .cash-summary strong{font-size:19px}
+  #cash .category-manager,#cash .cash-layout>.panel{padding:13px}
+  #cash .category-manager .category-add-row{grid-template-columns:1fr minmax(0,1.5fr) 58px;gap:6px}
+  #cash .category-manager .category-add-row input,
+  #cash .category-manager .category-add-row select{min-height:48px;font-size:13px;padding:8px}
+  #cash .category-manager .category-add-row .btn{min-height:48px;font-size:13px}
+  #cash .cash-layout .formgrid{grid-template-columns:1fr 1fr;gap:9px}
+  #cash .cash-layout label{font-size:12px}
+  #cash .cash-layout input,#cash .cash-layout select{min-height:48px;font-size:14px;padding:9px}
+  #cash .cash-layout .panel h2{font-size:17px}
+}
+</style>
+</head>
+<body>
+<header>
+<div class="header-left">
+<button type="button" id="menuToggle" class="hamburger" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+<div><h1>JAAT — Chart of Accounts</h1><p>Cash Book • Attendance • Employees • Salary • Payments</p></div>
+</div>
+<div class="pill" style="background:#dff3e6;color:#155b37">CHART OF ACCOUNTS</div>
+</header>
+<div class="wrap">
+<nav id="appMenu" class="app-menu" aria-label="Main menu">
+<button class="active" data-tab="cash">Cash Book</button>
+<button data-tab="attendance">Attendance Sheet</button>
+<button data-tab="attendanceComplete">Attendance Complete</button>
+<button data-tab="employees">Employees</button>
+<button data-tab="payroll">Monthly Sheet</button>
+<button data-tab="payments">Payments</button>
+<button data-tab="tasks">Daily Tasks</button>
+<button data-tab="backup">Backup &amp; Restore</button>
+<button data-tab="employeeSalary">Employee Setup 🔒</button>
+<button data-tab="realCash">Chart of Accounts 🔒</button>
+</nav>
+<main>
+
+<section id="employees">
+<div class="panel"><div class="row"><h2>Employee list</h2><span class="muted" id="employeeCount">0 employees</span></div><div class="tablewrap"><table><thead><tr><th>Employee</th><th>Salary type</th><th>Phone</th><th>Joining date</th><th>Leaving date</th><th>Status</th><th>Action</th></tr></thead><tbody id="employeeRows"></tbody></table></div></div>
+</section>
+<section id="attendance" class="attendance-screen">
+<div class="attendance-datebar"><label for="attDate">Attendance Date</label><input type="date" id="attDate"></div>
+<div id="attendanceRows" class="attendance-list" aria-live="polite"></div>
+</section>
+<section id="attendanceComplete">
+<div class="panel"><div class="row"><h2>Attendance Complete</h2><input type="date" id="completeDate" style="max-width:180px"></div><div class="cash-summary" style="margin:10px 0 16px;font-size:15px"><b>Total active employees:</b> <strong id="completeTotalCount">0</strong>　<b>Present:</b> <strong id="completePresentCount">0</strong>　<b>Absent:</b> <strong id="completeAbsentSummary">0</strong></div>
+<div class="row"><h3>Daily Present</h3><span class="pill" id="completeDailyCount">0</span></div><div id="completeDaily"></div>
+<div class="row" style="margin-top:18px"><h3>Monthly</h3><span class="pill" id="completeMonthlyCount">0</span></div><div id="completeMonthly"></div>
+<div class="row" style="margin-top:18px"><h3>Absent</h3><span class="pill" id="completeAbsentCount">0</span></div><div id="completeAbsent"></div></div>
+</section>
+<section id="employeeSalary">
+<div class="panel"><h2>Employees &amp; Salary — محفوظ سیکشن</h2><div id="salaryLock"><p class="secure-note">یہ اور Real Cash دونوں سیکشن ایک ہی ذاتی PIN سے کھلیں گے۔ پہلی مرتبہ 4 سے 8 ہندسوں کا PIN بنائیں۔</p><div class="formgrid"><div><label>Private PIN</label><input id="salaryPin" type="password" inputmode="numeric" placeholder="4–8 digits"></div></div><div class="actions"><button class="btn primary" id="salaryUnlock">Open / Set PIN</button></div></div>
+<div id="salaryContent" class="hidden"><div class="panel"><h2>Add employee</h2>
+<div class="formgrid">
+<div><label>Employee name</label><input id="empName" placeholder="Full name"></div>
+<div><label>Salary type</label><select id="empType"><option value="monthly">Monthly</option><option value="daily">Daily</option></select></div>
+<div><label>Salary amount</label><input id="empSalary" type="number" min="0" step=".01" placeholder="e.g. 3000"></div>
+<div><label>Employee photo</label><input id="empPhoto" type="file" accept="image/*"></div>
+<div><label>Phone (optional)</label><input id="empPhone" type="tel" inputmode="tel" placeholder="UAE: 05XXXXXXXX or +9715XXXXXXXX"></div>
+<div><label>Joining / Start date</label><input id="empStart" type="date"></div>
+<div><label>Leaving / Last working date (optional)</label><input id="empEnd" type="date"></div>
+</div><div class="actions"><button class="btn primary" id="addEmployee">Save employee</button></div><p class="muted">Employee profiles can be edited later (name, phone, salary type/rate, joining/rejoining and leaving date). Photos can be replaced. Archived employees and all historical attendance/payment records remain saved.</p>
+</div>
+<div class="actions"><button class="btn light" data-salary-type="daily">Daily Employees</button><button class="btn light" data-salary-type="monthly">Monthly Employees</button></div><div id="salaryTypeLabel" class="muted">Daily Employees</div><div class="tablewrap"><table><thead><tr><th>Employee name</th><th>Phone</th><th>Salary</th><th>Change salary</th><th>Type</th><th>Save</th></tr></thead><tbody id="salaryRows"></tbody></table></div></div></div>
+</section>
+<section id="cash" class="active">
+<h2 style="color:#08665b;font-size:23px;margin:4px 0 16px">Cash Book (AED)</h2>
+<div class="cash-summary"><div class="cashline">💰 <b>Personal Net Balance:</b> <strong id="personalCashSummary">0.00 AED</strong></div><div class="cashline">🏢 <b>Company Net Balance:</b> <strong id="companyCashSummary">0.00 AED</strong></div><hr style="border:0;border-top:1px solid #b8d9bf;margin:10px 0"><div class="cashline">📌 <b>Total Combined Cash:</b> <strong>Private · Open Chart of Accounts with PIN</strong></div></div>
+
+<div class="panel" id="openingCashPanel"><h2>Opening Cash (First Day)</h2><p class="muted">صرف پہلی مرتبہ ابتدائی بیلنس درج کریں۔ پہلے سے موجود Cash Book ریکارڈ تبدیل نہیں ہوگا۔</p><div class="formgrid"><div><label>Personal Opening Cash (AED)</label><input id="openingPersonal" type="number" step=".01" placeholder="0.00"></div><div><label>Company Opening Cash (AED)</label><input id="openingCompany" type="number" step=".01" placeholder="0.00"></div></div><div class="actions"><button class="btn primary" id="saveOpeningCash" type="button">Save Opening Cash</button><span id="openingCashStatus" class="muted"></span></div></div>
+<div class="panel category-manager"><h2>Manage Categories (Personal &amp; Company)</h2><div class="category-add-row"><select id="categoryAccount" aria-label="Category account"><option value="company">Company</option><option value="personal">Personal</option></select><input id="cashNewCategory" placeholder="New Category Name..."><button class="btn primary" id="saveCashCategory" type="button">＋ Add</button></div><div id="cashCategoryChips" class="category-chips"></div></div>
+<div class="cash-layout"><div class="panel"><h2>Cash Book — Income (+) / Expenses (−)</h2><p class="muted">Company یا Personal اکاؤنٹ منتخب کریں، پھر رقم جمع کرنے کے لیے (+) یا خرچ درج کرنے کے لیے (−) منتخب کریں۔</p><div class="actions"><button class="btn primary" type="button" id="cashIncomeMode">＋ Add Income</button><button class="btn danger" type="button" id="cashExpenseMode">− Add Expense</button></div>
+<div class="formgrid">
+<div><label>Account</label><select id="cashType"><option value="company">Company Cash</option><option value="personal">Personal Cash</option></select></div>
+<div><label>Transaction type</label><select id="cashAction"><option value="add">Income / آمدن</option><option value="subtract">Expense / خرچ</option></select></div>
+<div><label>Amount</label><input id="cashAmount" type="number" min="0.01" step=".01" placeholder="0.00"></div>
+<div><label>Saved category</label><select id="cashCategory"></select></div>
+<div><label>Date &amp; time</label><input id="cashDate" type="datetime-local"></div>
+<div style="grid-column:1/-1"><label>Source of Income / Description</label><input id="cashNote" placeholder="مثلاً Sales, customer, ATM, expense details"></div>
+</div><div class="actions"><button class="btn primary" id="cashSave">Save cash entry</button></div>
+</div>
+<div class="panel"><div class="row"><h2>Daily Cash Book Ledger</h2><div class="actions" style="margin:0"><input type="date" id="cashLedgerDate" style="max-width:165px"><select id="cashHistoryAccount" style="max-width:150px"><option value="all">All accounts</option><option value="company">Company</option><option value="personal">Personal</option></select><button class="btn light" id="cashExportExcel" type="button">Export Excel</button><button class="btn primary" id="cashShareWhatsApp" type="button">Share WhatsApp</button></div></div>
+<p class="muted">منتخب تاریخ کا روزانہ Cash Ledger Excel فائل میں محفوظ کریں یا WhatsApp پر شیئر کریں۔</p>
+<div class="tablewrap"><table><thead><tr><th>Date &amp; time</th><th>Account</th><th>Type</th><th>Category</th><th>Details</th><th>Amount</th><th>Balance after</th></tr></thead><tbody id="cashHistoryRows"></tbody></table></div></div>
+</section>
+<section id="realCash">
+<div class="panel"><h2>Real Cash — Private</h2><div id="realCashLock"><p class="secure-note">Employees & Salary والا وہی ذاتی PIN استعمال کریں۔ یہ ڈیمو لاک اسی براؤزر میں ہے، بینکنگ سیکیورٹی نہیں۔</p><div class="formgrid"><div><label>Private PIN</label><input id="realCashPin" type="password" inputmode="numeric" placeholder="4–8 digits"></div></div><div class="actions"><button class="btn primary" id="realCashUnlock">Open / Set PIN</button></div></div>
+<div id="realCashContent" class="hidden"><div class="card metric" style="margin-bottom:14px"><div class="label">Total Personal / Bank Accounts</div><strong id="realCashTotal">0.00</strong></div><div class="formgrid"><div><label>Account / Category name</label><input id="realCashName" placeholder="e.g. Bank name / Cash Box"></div><div><label>Opening / current balance (negative allowed)</label><input id="realCashBalance" type="number" step=".01"></div><div style="align-self:end"><button class="btn primary" id="addRealAccount">Add category</button></div></div><div id="realCashAccounts"></div><hr><h3>Deposit / Withdraw</h3><div class="formgrid"><div><label>Account</label><select id="realCashAccount"></select></div><div><label>Amount</label><input id="realCashAmount" type="number" min=".01" step=".01" placeholder="0.00"></div><div><label>Action (+ / −)</label><select id="realCashAction"><option value="add">＋ Plus / Deposit</option><option value="subtract">− Minus / Withdraw</option></select></div><div><label>Entry date &amp; time</label><input id="realCashDate" type="datetime-local"></div><div style="grid-column:1/-1"><label>Manual details / Reference</label><input id="realCashNote" placeholder="e.g. Bank deposit, ATM withdrawal, transfer reference"></div></div><div class="actions"><button class="btn primary" id="realCashSave">Save manual entry</button></div><div id="realCashHistory"></div></div></div>
+</section>
+<section id="payroll">
+<div class="panel"><div class="row"><h2>Monthly employees</h2><div style="display:flex;gap:8px"><input type="month" id="payMonth"><button class="btn light" id="refreshPayroll">Show</button></div></div>
+<p class="muted">ہر ملازم کی حاضری، بنی ہوئی تنخواہ، ادا شدہ رقم اور باقی بیلنس یہاں دیکھیں۔</p>
+<div class="actions" style="margin:12px 0"><button class="btn primary" id="shareAllMonthlyPayroll">Share All Employees Monthly Salary to Boss WhatsApp 📸</button></div>
+<p class="muted">ایک ہی تصویری رپورٹ میں تمام ملازمین کی تصویر، نام، حاضری، تنخواہ، ادا شدہ رقم اور بقایا شامل ہوگا۔ شیئر مینو سے Boss کا WhatsApp منتخب کریں۔</p>
+<div class="tablewrap"><table><thead><tr><th>Employee</th><th>Monthly salary</th><th>Present days</th><th>Earned</th><th>Paid</th><th>Remaining</th><th>Action</th></tr></thead><tbody id="payrollRows"></tbody></table></div></div>
+</section>
+<section id="payments">
+<div class="panel"><h2>Pending employee payments</h2><p class="muted">ہر ملازم کی کل کتنی دیہاڑی یا ماہانہ تنخواہ باقی ہے، یہاں نظر آئے گی۔ ملازم منتخب کرنے پر نیچے اس کی تاریخ وار Pending رقم آئے گی۔</p><div id="employeePendingSummary" class="tablewrap"></div></div>
+<div class="panel"><h2>Record employee payment</h2>
+<div class="formgrid">
+<div><label>Employee</label><select id="paymentEmployee"></select></div>
+<div><label>Amount</label><input type="number" id="paymentAmount" min=".01" step=".01" placeholder="Amount"></div>
+<div><label>Payment date & time</label><input type="datetime-local" id="paymentDate"></div>
+</div><div class="actions"><button class="btn primary" id="recordPayment">Submit Payment</button></div>
+<p class="muted">ہر غیر ادا شدہ حاضری تاریخ وار منتخب کریں۔ Daily میں جس دن کو منتخب کریں گے صرف اسی دن کی ادائیگی ہوگی؛ Monthly میں ایک یا کئی تاریخوں کی جزوی یا مکمل ادائیگی کر سکتے ہیں۔ Daily ملازم کی ادائیگی Personal Cash سے منفی ہوگی؛ Monthly ملازم کی ادائیگی صرف ماہانہ Payroll میں درج ہوگی اور Personal یا Company Cash کو تبدیل نہیں کرے گی۔</p>
+<div class="panel" style="margin-top:14px"><h3>Pending salary · تاریخ وار</h3><div id="pendingSalaryRows"></div><div class="row" style="margin-top:10px"><b>Selected pending total</b><b id="selectedPendingTotal">0.00</b></div></div>
+</div>
+<div class="panel"><h2>Payment history</h2><div class="tablewrap"><table><thead><tr><th>Employee</th><th>Amount</th><th>Payment date &amp; time</th><th>Recorded at</th><th>Salary dates paid</th><th>Source</th><th>WhatsApp</th></tr></thead><tbody id="paymentRows"></tbody></table></div></div>
+</section>
+<section id="tasks">
+<div class="panel"><div class="row"><h2>Daily tasks</h2><input type="date" id="taskDate" style="max-width:180px"></div>
+<div class="formgrid"><div style="grid-column:span 2"><label>New task</label><input id="taskName" placeholder="Enter today's work"></div><div style="align-self:end"><button class="btn primary" id="addTask">Add task</button></div></div>
+<div class="grid" style="margin:15px 0 10px">
+<div class="card metric"><div class="label">Total tasks</div><strong id="taskTotal">0</strong></div>
+<div class="card metric"><div class="label">Completed</div><strong id="taskDone">0</strong></div>
+<div class="card metric"><div class="label">Remaining</div><strong id="taskLeft">0</strong></div>
+<div class="card metric"><div class="label">Progress</div><strong id="taskPercent">0%</strong></div>
+</div><div class="progress"><span id="taskProgress" style="width:0%"></span></div>
+<div id="taskList" style="margin-top:10px"></div>
+</div>
+<div class="panel"><h2>Daily task history</h2><p class="muted">Select another date above to view that day's saved tasks. Tasks do not automatically move to the next day.</p></div>
+</section>
+<section id="backup">
+<div class="panel">
+<h2>Backup &amp; Restore</h2>
+<p class="muted">ملازمین، تصاویر، حاضری، تنخواہیں، ادائیگیاں، کیش بُک اور تمام موجودہ ریکارڈ ایک ہی بیک اَپ فائل میں محفوظ کریں۔</p>
+<div class="cash-summary" style="margin:12px 0"><b>Current records:</b> <span id="backupRecordCount">0</span> &nbsp; <b>Last manual backup:</b> <span id="backupLastDate">Not created yet</span><br><b>Automatic daily backup:</b> <span id="autoBackupDate">Checking…</span></div>
+<div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
+<button type="button" class="btn primary" id="createBackup">Download Full Backup</button>
+<button type="button" class="btn light" id="shareBackup">Share Backup File</button>
+<button type="button" class="btn light" id="downloadAutoBackup">Download Latest Automatic Backup</button>
+<button type="button" class="btn light" id="restoreAutoBackup">Restore Latest Automatic Backup</button>
+<button type="button" class="btn light" id="chooseRestore">Restore From Backup File</button>
+<input type="file" id="restoreBackupFile" accept=".json,application/json" hidden>
+</div>
+<p class="muted" style="margin-top:14px">خودکار بیک اَپ اسی موبائل/ایپ کی محفوظ IndexedDB اسٹوریج میں روزانہ بنتا ہے (آخری 14 دن تک)۔ یہ خودکار بیک اَپ موبائل خراب یا ایپ کا ڈیٹا صاف ہونے سے محفوظ بیرونی کاپی کا متبادل نہیں؛ اس لیے وقتاً فوقتاً فائل بھی Download یا Share کریں۔ Restore کرنے سے موجودہ ڈیٹا منتخب بیک اَپ سے تبدیل ہوگا۔</p>
+<div id="backupStatus" class="muted" role="status" aria-live="polite"></div>
+</div>
+</section>
+</main>
+<footer>JAAT · Offline standalone app · Data stays on this device · IndexedDB storage<br><span id="storageInfo">Storage: checking device capacity…</span></footer>
+</div>
+<script>
+(async()=>{
+const $=id=>document.getElementById(id), today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}, localDateTime=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}, round2=n=>Math.round((Number(n)+Number.EPSILON)*100)/100, money=n=>(Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const MAIN_DB_NAME='JAAT_Main_Data_DB',MAIN_STORE='appState',MAIN_KEY='projectTwoDemo';
+let mainDbPromise;
+function openMainDatabase(){
+ if(!('indexedDB' in window))return Promise.reject(new Error('IndexedDB is not available in this app environment.'));
+ if(!mainDbPromise)mainDbPromise=new Promise((resolve,reject)=>{
+  const request=indexedDB.open(MAIN_DB_NAME,1);
+  request.onupgradeneeded=()=>{const database=request.result;if(!database.objectStoreNames.contains(MAIN_STORE))database.createObjectStore(MAIN_STORE);};
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error||new Error('Could not open the app database.'));
+  request.onblocked=()=>reject(new Error('App database upgrade is blocked by another open window.'));
+ });
+ return mainDbPromise;
+}
+async function readMainDatabase(){
+ const database=await openMainDatabase();
+ return await new Promise((resolve,reject)=>{
+  const tx=database.transaction(MAIN_STORE,'readonly'),request=tx.objectStore(MAIN_STORE).get(MAIN_KEY);
+  request.onsuccess=()=>resolve(request.result||null);
+  request.onerror=()=>reject(request.error||new Error('Could not read saved app data.'));
+ });
+}
+async function writeMainDatabase(snapshot){
+ const database=await openMainDatabase();
+ return await new Promise((resolve,reject)=>{
+  const tx=database.transaction(MAIN_STORE,'readwrite');
+  tx.objectStore(MAIN_STORE).put(snapshot,MAIN_KEY);
+  tx.oncomplete=()=>resolve(true);
+  tx.onerror=()=>reject(tx.error||new Error('Could not save app data.'));
+  tx.onabort=()=>reject(tx.error||new Error('App data save was cancelled.'));
+ });
+}
+async function load(){
+ try{
+  const stored=await readMainDatabase();
+  if(stored&&typeof stored==='object')return stored;
+ }catch(error){console.warn('IndexedDB read unavailable; trying legacy local storage.',error);}
+ let legacy={};
+ try{legacy=JSON.parse(localStorage.getItem(MAIN_KEY)||'{}')||{};}catch(error){legacy={};}
+ if(legacy&&typeof legacy==='object'&&(Object.keys(legacy).length>0)){
+  try{await writeMainDatabase(legacy);localStorage.removeItem(MAIN_KEY);}
+  catch(error){console.warn('Legacy data migration could not complete; retaining the local copy.',error);}
+ }
+ return legacy;
+}
+let db=await load();
+db.employees ||= [];db.attendance ||= {};db.payments ||= [];db.tasks ||= {};db.companyBalance ??=0;db.personalBalance ??=0;db.accruals ||= {};db.cashCategories ||= {company:{income:['Sales / آمدن','Other income'],expense:['Purchase','Rent','Transport','Other expense']},personal:{income:['Personal income','Other income'],expense:['Personal expense','Other expense']}};db.cashTransactions ||= [];db.salaryManage ||= [];
+async function requestPersistentStorage(){try{if(navigator.storage?.persist)await navigator.storage.persist();}catch(e){console.warn('Persistent storage request was not granted:',e);}}
+async function refreshStorageInfo(){const el=$('storageInfo');if(!el)return;try{if(!navigator.storage?.estimate){el.textContent='Storage capacity is managed by this device/browser.';return;}const info=await navigator.storage.estimate(),used=Number(info.usage||0),quota=Number(info.quota||0),fmt=n=>n>=1024**3?(n/1024**3).toFixed(2)+' GB':n>=1024**2?(n/1024**2).toFixed(1)+' MB':(n/1024).toFixed(0)+' KB';el.textContent='Device app storage used: '+fmt(used)+(quota?' · available quota: '+fmt(quota):'')+' · uses expandable device-managed IndexedDB quota; actual free space depends on device/browser.';}catch(e){el.textContent='Storage capacity is managed by this device/browser.';}}
+requestPersistentStorage();
+let saveQueue=Promise.resolve(),saveErrorShown=false;
+const save=()=>{
+ let snapshot;
+ try{snapshot=JSON.parse(JSON.stringify(db));}
+ catch(error){alert('Data could not be prepared for saving. No existing records were removed.');return false;}
+ saveQueue=saveQueue.catch(()=>{}).then(()=>writeMainDatabase(snapshot));
+ saveQueue.then(()=>{queueDailyAutoBackup();refreshStorageInfo();}).catch(error=>{
+  console.error('IndexedDB save failed:',error);
+  try{localStorage.setItem(MAIN_KEY,JSON.stringify(snapshot));}
+  catch(fallbackError){if(!saveErrorShown){saveErrorShown=true;alert('محفوظ کرنے میں مسئلہ ہے۔ براہِ کرم فوراً Backup ڈاؤن لوڈ کریں؛ موجودہ اسکرین کا ڈیٹا بند نہ کریں۔');}}
+ });
+ return true;
+};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const emp=id=>db.employees.find(e=>e.id===id);
+const key=(date,id)=>date+'|'+id;
+const presentDays=(id,month)=>Object.entries(db.attendance).filter(([date,ids])=>date.startsWith(month+'-')&&ids.includes(id)).length;
+const attendanceSalary=(e,date)=>Number(db.accruals[key(date,e.id)])||(e.type==='monthly'?Number(e.salary)/new Date(Number(date.slice(0,4)),Number(date.slice(5,7)),0).getDate():Number(e.salary));
+const paidAllocations=(id,date)=>db.payments.reduce((sum,p)=>sum+(p.employeeId===id?(p.allocations||[]).filter(a=>a.date===date).reduce((n,a)=>n+Number(a.amount||0),0):0),0);
+const unpaidDays=(id,month='')=>{const e=emp(id);if(!e)return [];return Object.entries(db.attendance).filter(([date,ids])=>ids.includes(id)&&(!month||date.startsWith(month))).sort(([a],[b])=>a.localeCompare(b)).map(([date])=>({date,earned:attendanceSalary(e,date),paid:paidAllocations(id,date)})).map(x=>({...x,remaining:Math.max(0,x.earned-x.paid)})).filter(x=>x.remaining>.001)};
+const earned=(e,month)=>Object.entries(db.attendance).reduce((sum,[date,ids])=>sum+(date.startsWith(month+'-')&&ids.includes(e.id)?attendanceSalary(e,date):0),0);
+const paid=(id,month)=>db.payments.filter(p=>p.employeeId===id&&(p.allocations||[]).some(a=>a.date.startsWith(month+'-'))).reduce((sum,p)=>sum+(p.allocations||[]).filter(a=>a.date.startsWith(month+'-')).reduce((n,a)=>n+Number(a.amount||0),0),0);
+const outstanding=(e,month='')=>unpaidDays(e.id,month).reduce((sum,x)=>sum+x.remaining,0);
+const addCashTransaction=(account,kind,category,amount,details,when,source='Manual')=>{const balanceKey=account==='company'?'companyBalance':'personalBalance';amount=round2(amount);db[balanceKey]=round2(Number(db[balanceKey]||0)+(kind==='income'?amount:-amount));db.cashTransactions ||= [];db.cashTransactions.push({id:crypto.randomUUID(),account,kind,category,amount,details:details||'',date:when||new Date().toISOString(),balanceAfter:db[balanceKey],source});};
+function switchTab(tab){document.querySelectorAll('main section').forEach(s=>s.classList.toggle('active',s.id===tab));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('appMenu').classList.remove('open');$('menuToggle').setAttribute('aria-expanded','false');render()}
+$('menuToggle').addEventListener('click',()=>{const open=$('appMenu').classList.toggle('open');$('menuToggle').setAttribute('aria-expanded',String(open));});
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+function renderEmployees(){
+$('employeeCount').textContent=db.employees.length+' total employees · '+db.employees.filter(e=>!e.end||e.end>=today()).length+' active';
+$('employeeRows').innerHTML=db.employees.map(e=>`<tr><td><div class="employee">${e.photo?`<img class="avatar" src="${e.photo}">`:`<div class="avatar">${esc(e.name.slice(0,1).toUpperCase())}</div>`}<div><b>${esc(e.name)}</b><div class="muted">${esc(e.phone||'')}</div></div></div></td><td><span class="pill">${e.type}</span></td><td>${esc(e.phone||'—')}</td><td>${esc(e.start||'—')}</td><td>${esc(e.end||'—')}</td><td><span class="pill ${e.end&&e.end<today()?'amber':'green'}">${e.end&&e.end<today()?'Left':'Active'}</span></td><td><button class="btn small light" data-edit="${e.id}">Edit</button> <button class="btn small light" data-photo="${e.id}">Change Photo</button> <button class="btn small danger" data-delete="${e.id}">Archive</button></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No employees added yet.</td></tr>';
+$('paymentEmployee').innerHTML='<option value="">Select employee</option>'+db.employees.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');
+}
+function compressEmployeePhoto(file){
+ return new Promise((resolve,reject)=>{
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{
+   try{
+    const maxSide=720,scale=Math.min(1,maxSide/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
+    const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));canvas.height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+    const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const data=canvas.toDataURL('image/jpeg',0.78);URL.revokeObjectURL(url);resolve(data);
+   }catch(error){URL.revokeObjectURL(url);reject(error);}
+  };
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not read the selected employee photo.'));};
+  img.src=url;
+ });
+}
+$('addEmployee').onclick=async()=>{
+ const name=$('empName').value.trim(),salary=Number($('empSalary').value),file=$('empPhoto').files[0];
+ if(!name||!(salary>0)||!Number.isFinite(salary))return alert('Enter employee name and a valid salary amount.');
+ if($('empStart').value&&$('empEnd').value&&$('empEnd').value<$('empStart').value)return alert('Leaving date cannot be earlier than joining date.');
+ const button=$('addEmployee');button.disabled=true;
+ try{
+  const photo=file?await compressEmployeePhoto(file):'';
+  db.employees.push({id:crypto.randomUUID(),name,type:$('empType').value,salary,phone:normalizedPhone($('empPhone').value),start:$('empStart').value,end:$('empEnd').value,photo:photo||''});
+  save();['empName','empSalary','empPhone','empStart','empEnd','empPhoto'].forEach(id=>$(id).value='');render();
+ }catch(error){alert('Employee photo could not be processed. Please try another photo; existing employee data is safe.');}
+ finally{button.disabled=false;}
+};
+$('employeeRows').onclick=async e=>{const photoId=e.target.dataset.photo;if(photoId){const employee=emp(photoId);if(!employee)return;const picker=document.createElement('input');picker.type='file';picker.accept='image/*';picker.onchange=async()=>{const file=picker.files&&picker.files[0];if(!file)return;try{const compressed=await compressEmployeePhoto(file);employee.photo=compressed;save();render();completed();refreshStorageInfo();alert('Employee photo updated. Previous attendance and payment records are unchanged.');}catch(err){alert('Photo could not be updated. Existing employee data and photo are safe.');}};picker.click();return;}const edit=e.target.dataset.edit;if(edit){const x=emp(edit);const name=prompt('Employee name',x.name);if(name===null)return;const phone=prompt('Phone number',x.phone||'');if(phone===null)return;const salaryType=prompt('Salary type: daily or monthly',x.type||'daily');if(salaryType===null)return;const salary=prompt('Salary amount / daily wage',String(x.salary||''));if(salary===null)return;const start=prompt('Joining / rejoining date (YYYY-MM-DD)',x.start||'');if(start===null)return;const end=prompt('Leaving / last working date (YYYY-MM-DD; blank means Active / returned)',x.end||'');if(end===null)return;if(!['daily','monthly'].includes(salaryType.trim().toLowerCase()))return alert('Salary type must be daily or monthly.');if(!(Number(salary)>0))return alert('Enter a valid salary amount.');if(start.trim()&&end.trim()&&end.trim()<start.trim())return alert('Leaving date cannot be earlier than joining date.');x.name=name.trim()||x.name;x.phone=normalizedPhone(phone);x.type=salaryType.trim().toLowerCase();x.salary=Number(salary);x.employmentHistory ||= [];if((start.trim()!==String(x.start||'')||end.trim()!==String(x.end||''))&&(x.start||x.end)){x.employmentHistory.push({start:x.start||'',end:x.end||'',recordedAt:new Date().toISOString()});}x.start=start.trim();x.end=end.trim();x.status=x.end?'inactive':'active';save();render();return}const id=e.target.dataset.delete;if(id&&confirm('Archive this employee? Historical attendance and payments will be preserved.')){const x=emp(id);if(x){x.employmentHistory ||= [];if(!x.end){x.employmentHistory.push({start:x.start||'',end:today(),recordedAt:new Date().toISOString()});x.end=today();}x.status='inactive';save();render()}}};
+function attendance(){
+const date=$('attDate').value,ids=db.attendance[date]||[],abs=(db.absences?.[date]||[]).map(a=>a.id);
+const month=date.slice(0,7),daysInMonth=new Date(Number(date.slice(0,4)),Number(date.slice(5,7)),0).getDate();
+const activeEmployees=db.employees.filter(e=>(!e.start||e.start<=date)&&(!e.end||e.end>=date));
+$('attendanceRows').innerHTML=activeEmployees.map(e=>{const status=ids.includes(e.id)?'Present':abs.includes(e.id)?'Absent':'Pending';const count=Object.entries(db.attendance).filter(([d,a])=>d.startsWith(month+'-')&&d<=date&&a.includes(e.id)).length;const monthStart=month+'-01',eligibleStart=e.start&&e.start>monthStart?e.start:monthStart,eligibleEnd=e.end&&e.end<date?e.end:date;const eligibleDays=eligibleEnd>=eligibleStart?Math.floor((new Date(eligibleEnd+'T00:00:00')-new Date(eligibleStart+'T00:00:00'))/86400000)+1:0;const pct=eligibleDays?Math.min(100,Math.round(count/eligibleDays*100)):0;return `<div class="attendance-card"><div class="attendance-person">${e.photo?`<img class="avatar" src="${e.photo}" alt="">`:`<div class="avatar">${esc(e.name.slice(0,1).toUpperCase())}</div>`}<div class="attendance-identity"><b>${esc(e.name)}</b><span>${esc(e.phone||'Number not added')}</span><span>Attendance: ${pct}% · ${status}</span></div></div><div class="att-actions"><button class="btn small ${status==='Present'?'primary':'light'}" data-present="${e.id}" ${status==='Present'?'disabled':''}>Present</button><button class="btn small ${status==='Absent'?'danger':'light'}" data-absent="${e.id}" ${status==='Absent'?'disabled':''}>Absent</button></div></div>`}).join('')||'<div class="empty attendance-empty">Add employees to begin attendance.</div>';
+}
+function normalizedPhone(phone){let n=String(phone||'').replace(/\D/g,'');if(n.startsWith('00971'))n=n.slice(2);if(n.startsWith('971'))return n;if(n.startsWith('05')&&n.length===10)return '971'+n.slice(1);if(n.startsWith('5')&&n.length===9)return '971'+n;return n;}
+function openEmployeeWhatsApp(employee,message){const phone=normalizedPhone(employee?.phone);if(phone.length<9){alert('اس ملازم کا درست موبائل نمبر درج کریں، پھر WhatsApp پیغام شیئر ہو سکے گا۔');return false;}window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(message),'_blank','noopener');return true;}
+function absentWhatsAppMessage(employee,date){const d=new Date(date+'T12:00:00').toLocaleDateString('en-GB');return `🌿 حاضری کی اطلاع | Attendance Notice\n\nالسلام علیکم ${employee.name}،\nآپ کو اطلاع دی جاتی ہے کہ آج کی حاضری میں آپ کی غیر موجودگی درج کی گئی ہے۔\n📅 تاریخ: ${d}\n\nDear ${employee.name}, you have been marked absent in today's attendance.\nDate: ${d}\n\nManagement | انتظامیہ`;}
+function paymentWhatsAppMessage(employee,payment){const dates=(payment.allocations||[]).map(a=>`${a.date}: AED ${money(a.amount)} PAID`).join('\n');return `السلام علیکم ${employee.name}\n\nتنخواہ کی ادائیگی کی تفصیل | Salary Payment Details\nادائیگی کی تاریخ: ${new Date(payment.date).toLocaleDateString('en-GB')}\nادا شدہ رقم: AED ${money(payment.amount)}\n\nتاریخ وار تفصیل:\n${dates||'تفصیل دستیاب نہیں'}\n\nآپ کی ادائیگی درج کر دی گئی ہے۔ شکریہ۔\n\nDear ${employee.name}, your payment of AED ${money(payment.amount)} has been recorded.\n\nRegards, Management`;}
+function monthWhatsAppMessage(employee,month,mode){const days=Object.entries(db.attendance).filter(([date,ids])=>date.startsWith(month+'-')&&ids.includes(employee.id)).map(([date])=>date).sort();const absent=(db.absences||{});const absentDates=Object.entries(absent).filter(([date,items])=>date.startsWith(month+'-')&&items.some(x=>x.id===employee.id)).map(([date])=>date).sort();const total=earned(employee,month),got=paid(employee.id,month),left=Math.max(0,total-got),monthLabel=new Date(month+'-01T12:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'});const paymentRows=db.payments.filter(p=>p.employeeId===employee.id).flatMap(p=>(p.allocations||[]).filter(a=>a.date.startsWith(month+'-')).map(a=>`${a.date}: AED ${money(a.amount)} (paid ${new Date(p.date).toLocaleDateString('en-GB')})`));const head=`السلام علیکم ${employee.name}\n\nماہانہ تنخواہ / حساب | ${monthLabel}\n`;if(mode==='salary')return `${head}\nمقررہ ماہانہ تنخواہ: AED ${money(employee.salary)}\nحاضری کے مطابق بنی تنخواہ: AED ${money(total)}\nادا شدہ: AED ${money(got)}\nباقی واجب الادا: AED ${money(left)}\nحاضر دن: ${days.length}\nغیر حاضر دن: ${absentDates.length}\n\nDear ${employee.name}, your ${monthLabel} salary summary: earned AED ${money(total)}, paid AED ${money(got)}, balance AED ${money(left)}.\n\nManagement`;return `${head}\nمقررہ ماہانہ تنخواہ: AED ${money(employee.salary)}\nحاضری کے مطابق بنی تنخواہ: AED ${money(total)}\nکل ادا شدہ: AED ${money(got)}\nباقی واجب الادا: AED ${money(left)}\n\nحاضری کی تاریخیں (${days.length}):\n${days.join(', ')||'کوئی حاضری درج نہیں'}\n\nغیر حاضری کی تاریخیں (${absentDates.length}):\n${absentDates.join(', ')||'کوئی غیر حاضری درج نہیں'}\n\nادائیگیوں کی تاریخ وار تفصیل:\n${paymentRows.join('\n')||'اس مہینے کوئی ادائیگی درج نہیں'}\n\nبراہ کرم اس ماہانہ حساب کو اپنے ریکارڈ کے لیے محفوظ رکھیں۔\n\nRegards, Management`; }
+$('attendanceRows').onclick=e=>{const id=e.target.dataset.present||e.target.dataset.absent;if(!id)return;const date=$('attDate').value,employee=emp(id);if(!employee)return;db.attendance[date] ||= [];db.absences ||= {};db.absences[date] ||= [];const isPresent=db.attendance[date].includes(id),wantPresent=!!e.target.dataset.present;if(wantPresent){if(isPresent)return;db.absences[date]=db.absences[date].filter(a=>a.id!==id);const days=new Date(Number(date.slice(0,4)),Number(date.slice(5,7)),0).getDate();const amount=round2(employee.type==='monthly'?Number(employee.salary)/days:Number(employee.salary));db.attendance[date].push(id);db.accruals[key(date,id)]=amount;if(employee.type==='daily'){
+ // Daily wages move from Company to Personal only when the Company has enough available cash.
+ // If Company cash is insufficient, attendance and the full earned wage remain recorded as pending in Manage; never force the Company balance below zero.
+ if(Number(db.companyBalance||0)+0.001>=amount){
+  addCashTransaction('company','expense','Employee salary accrual',amount,employee.name+' · '+date,date+'T12:00','Attendance salary');
+  addCashTransaction('personal','income','Employee salary payable transfer',amount,employee.name+' · '+date,date+'T12:00','Attendance salary');
+ }else{
+  db.salaryManage ||= [];
+  db.salaryManage.push({id:crypto.randomUUID(),employeeId:id,date,amount,status:'pending_company_cash',createdAt:new Date().toISOString(),note:'Company cash insufficient at attendance'});
+ }
+}}else{if(!isPresent){if(!db.absences[date].some(a=>a.id===id))db.absences[date].push({id});}else{if(paidAllocations(id,date)>.001)return alert('اس دن کی تنخواہ ادا ہو چکی ہے، اس لیے حاضری تبدیل نہیں کی جا سکتی۔');const amount=round2(attendanceSalary(employee,date));db.attendance[date]=db.attendance[date].filter(x=>x!==id);delete db.accruals[key(date,id)];if(employee.type==='daily'){
+ const pending=db.salaryManage||[];const pendingIndex=pending.findIndex(x=>x.employeeId===id&&x.date===date&&x.status==='pending_company_cash');
+ if(pendingIndex>=0)pending.splice(pendingIndex,1);
+ else{addCashTransaction('company','income','Attendance salary reversal',amount,employee.name+' · '+date+' · correction',date+'T12:01','Attendance correction');addCashTransaction('personal','expense','Salary payable reversal',amount,employee.name+' · '+date+' · correction',date+'T12:01','Attendance correction');}
+}if(!db.absences[date].some(a=>a.id===id))db.absences[date].push({id});}}save();render();if(!wantPresent)openEmployeeWhatsApp(employee,absentWhatsAppMessage(employee,date))};
+function payroll(){
+const month=$('payMonth').value;const list=db.employees.filter(e=>e.type==='monthly');
+$('payrollRows').innerHTML=list.map(e=>{const days=presentDays(e.id,month),total=earned(e,month),got=paid(e.id,month),left=Math.max(0,total-got);return `<tr><td><b>${esc(e.name)}</b></td><td>${money(e.salary)}</td><td>${days}</td><td>${money(total)}</td><td>${money(got)}</td><td><b>${money(left)}</b></td><td><div style="display:flex;gap:5px;flex-wrap:wrap">${left>.001?`<button class="btn small primary" data-pay="${e.id}" data-left="${left}">Pay</button>`:'<span class="pill green">Paid</span>'}<button class="btn small light" data-share-month-salary="${e.id}">Monthly Salary WhatsApp</button><button class="btn small light" data-share-month-account="${e.id}">Monthly Account WhatsApp</button></div></td></tr>`}).join('')||'<tr><td colspan="7" class="empty">No monthly-salary employees.</td></tr>';
+}
+$('refreshPayroll').onclick=payroll;
+function monthAbsenceCount(id,month){return Object.entries(db.absences||{}).filter(([date,items])=>date.startsWith(month+'-')&&items.some(x=>x.id===id)).length}
+function monthEmployeeReportRows(month){return db.employees.filter(e=>(!e.start||e.start<=month+'-'+new Date(Number(month.slice(0,4)),Number(month.slice(5,7)),0).getDate())&&(!e.end||e.end>=month+'-01')).map(e=>{const present=presentDays(e.id,month),absent=monthAbsenceCount(e.id,month),total=earned(e,month),got=paid(e.id,month),left=Math.max(0,total-got);return {e,present,absent,total,got,left}})}
+function loadReportImage(src){return new Promise(resolve=>{if(!src)return resolve(null);const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src=src})}
+async function makeAllMonthlyPayrollImage(month,rows){
+ const width=1200,pad=48,header=190,rowH=190,height=header+rows.length*rowH+150,canvas=document.createElement('canvas');canvas.width=width;canvas.height=Math.max(height,header+150);const c=canvas.getContext('2d');
+ c.fillStyle='#f3f7f4';c.fillRect(0,0,width,canvas.height);c.fillStyle='#075b4f';c.fillRect(0,0,width,header);
+ const label=new Date(month+'-01T12:00:00').toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+ c.fillStyle='#fff';c.font='bold 42px Arial';c.fillText('JAAT — Monthly Salary Report',pad,66);c.font='28px Arial';c.fillText(label+'  |  All Employees',pad,112);c.font='bold 25px Arial';c.fillText('Employees: '+rows.length+'     Total Earned: AED '+money(rows.reduce((n,x)=>n+x.total,0))+'     Paid: AED '+money(rows.reduce((n,x)=>n+x.got,0))+'     Balance: AED '+money(rows.reduce((n,x)=>n+x.left,0)),pad,158);
+ for(let i=0;i<rows.length;i++){const r=rows[i],y=header+i*rowH;c.fillStyle='#fff';c.fillRect(pad,y+12,width-pad*2,rowH-20);c.strokeStyle='#d7e3dc';c.strokeRect(pad,y+12,width-pad*2,rowH-20);
+  const im=await loadReportImage(r.e.photo);if(im){c.save();c.beginPath();c.arc(pad+78,y+95,55,0,Math.PI*2);c.clip();const scale=Math.max(110/im.width,110/im.height);const iw=im.width*scale,ih=im.height*scale;c.drawImage(im,pad+78-iw/2,y+95-ih/2,iw,ih);c.restore()}else{c.fillStyle='#dcebe2';c.beginPath();c.arc(pad+78,y+95,55,0,Math.PI*2);c.fill();c.fillStyle='#245b49';c.font='bold 42px Arial';c.textAlign='center';c.fillText((r.e.name||'?').slice(0,1).toUpperCase(),pad+78,y+110);c.textAlign='left'}
+  const x=pad+160;c.fillStyle='#173b30';c.font='bold 30px Arial';c.fillText(r.e.name||'Unnamed',x,y+58);c.font='22px Arial';c.fillStyle='#45665a';c.fillText((r.e.type==='monthly'?'Monthly salary':'Daily wage')+' rate: AED '+money(r.e.salary)+'   |   Phone: '+(r.e.phone||'Not added'),x,y+96);
+  c.font='bold 24px Arial';c.fillStyle='#173b30';c.fillText('Present: '+r.present+'     Absent: '+r.absent+'     Earned: AED '+money(r.total),x,y+137);c.fillStyle='#075b4f';c.fillText('Paid: AED '+money(r.got)+'     Remaining: AED '+money(r.left),x,y+169);
+ }
+ const fy=header+rows.length*rowH+22;c.fillStyle='#075b4f';c.font='bold 28px Arial';c.fillText('JAAT | Confidential salary summary for management',pad,fy+40);return await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+}
+async function shareAllMonthlyPayroll(){const month=$('payMonth').value;if(!month)return alert('پہلے مہینہ منتخب کریں۔');const rows=monthEmployeeReportRows(month);if(!rows.length)return alert('اس مہینے کے لیے کوئی ملازم ریکارڈ موجود نہیں۔');const imageBlob=await makeAllMonthlyPayrollImage(month,rows);if(!imageBlob)return alert('تصویری رپورٹ تیار نہیں ہو سکی۔');const file=new File([imageBlob],'JAAT_Monthly_Salary_'+month+'.png',{type:'image/png'});const totals=rows.reduce((a,r)=>({earned:a.earned+r.total,paid:a.paid+r.got,left:a.left+r.left}),{earned:0,paid:0,left:0});const msg=`JAAT — All Employees Monthly Salary Report\nMonth: ${month}\nEmployees: ${rows.length}\nTotal Earned: AED ${money(totals.earned)}\nTotal Paid: AED ${money(totals.paid)}\nTotal Remaining: AED ${money(totals.left)}\n\nEmployee-wise photos and details are attached in the report image.`;try{if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'JAAT Monthly Salary Report',text:msg});return}const url=URL.createObjectURL(imageBlob),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);window.open('https://wa.me/?text='+encodeURIComponent(msg+'\n\nتصویری رپورٹ فون میں محفوظ کی گئی ہے؛ WhatsApp میں اسے منسلک کر دیں۔'),'_blank','noopener');alert('تصویری رپورٹ محفوظ کر دی گئی ہے۔ WhatsApp میں اسے attach کرکے Boss کو بھیج دیں۔')}catch(err){if(err?.name!=='AbortError')alert('شیئر نہیں ہو سکا۔ دوبارہ کوشش کریں۔')}}
+$('shareAllMonthlyPayroll').onclick=shareAllMonthlyPayroll;
+$('payrollRows').onclick=e=>{const id=e.target.dataset.pay||e.target.dataset.shareMonthSalary||e.target.dataset.shareMonthAccount;if(!id)return;const employee=emp(id);if(!employee)return alert('Employee record not found.');if(e.target.dataset.shareMonthSalary)return openEmployeeWhatsApp(employee,monthWhatsAppMessage(employee,$('payMonth').value,'salary'));if(e.target.dataset.shareMonthAccount)return openEmployeeWhatsApp(employee,monthWhatsAppMessage(employee,$('payMonth').value,'account'));$('paymentEmployee').value=id;$('paymentAmount').value=e.target.dataset.left;$('paymentDate').value=localDateTime();switchTab('payments')};
+function renderEmployeePendingSummary(){const rows=db.employees.map(e=>{const items=unpaidDays(e.id),total=items.reduce((n,x)=>n+x.remaining,0);return {e,items,total}}).filter(x=>x.total>.001);const grand=rows.reduce((n,x)=>n+x.total,0);$('employeePendingSummary').innerHTML=rows.length?`<table><thead><tr><th>Employee (select)</th><th>Type</th><th>Pending days</th><th>Total pending</th></tr></thead><tbody>${rows.map(x=>`<tr data-pending-employee="${x.e.id}" style="cursor:pointer"><td><b>${esc(x.e.name)}</b></td><td>${x.e.type==='daily'?'Daily':'Monthly'}</td><td>${x.items.length}</td><td><b>${money(x.total)}</b></td></tr>`).join('')}</tbody><tfoot><tr><th colspan="3">All employees total pending</th><th>${money(grand)}</th></tr></tfoot></table><p class="muted">کسی ملازم کے نام پر کلک کریں، پھر نیچے اس کی تاریخ منتخب کرکے Payment درج کریں۔</p>`:'<div class="empty">No pending employee payments.</div>';}
+$('employeePendingSummary').onclick=e=>{const row=e.target.closest('[data-pending-employee]');if(!row)return;$('paymentEmployee').value=row.dataset.pendingEmployee;renderPendingSalary();};
+function renderPendingSalary(){const id=$('paymentEmployee').value,e=emp(id),items=e?unpaidDays(id):[];$('pendingSalaryRows').innerHTML=items.map((x,i)=>`<label class="taskrow" style="display:flex;align-items:center;gap:10px"><input type="${e?.type==='daily'?'radio':'checkbox'}" name="pay-date" class="pay-date" value="${x.date}" ${e?.type==='daily'?(i===0?'checked':''):'checked'}><span style="flex:1"><b>${x.date}</b><small class="muted"> · ${money(x.earned)} earned</small></span><b>${money(x.remaining)} pending</b></label>`).join('')||'<div class="empty">اس ملازم کی کوئی بقایا تنخواہ نہیں۔</div>';const total=items.reduce((n,x)=>n+x.remaining,0);$('paymentAmount').max=total||'';$('paymentAmount').placeholder='Maximum pending: '+money(total);$('selectedPendingTotal').textContent=money(items.filter(x=>[...document.querySelectorAll('.pay-date:checked')].some(c=>c.value===x.date)).reduce((n,x)=>n+x.remaining,0));renderEmployeePendingSummary()}
+$('paymentEmployee').addEventListener('change',renderPendingSalary);
+$('pendingSalaryRows').addEventListener('change',()=>{const id=$('paymentEmployee').value,items=unpaidDays(id),selected=[...document.querySelectorAll('.pay-date:checked')].map(x=>x.value);$('selectedPendingTotal').textContent=money(items.filter(x=>selected.includes(x.date)).reduce((n,x)=>n+x.remaining,0));});
+$('recordPayment').onclick=()=>{const id=$('paymentEmployee').value,amount=Number($('paymentAmount').value),date=$('paymentDate').value,e=emp(id);if(!id||!e||!(amount>0)||!date)return alert('Select employee, amount and payment date/time.');const selected=[...document.querySelectorAll('.pay-date:checked')].map(x=>x.value);if(!selected.length)return alert('Select at least one pending salary date.');const due=unpaidDays(id).filter(x=>selected.includes(x.date));const total=due.reduce((n,x)=>n+x.remaining,0);if(amount>total+.001)return alert('Payment is higher than the selected unpaid amount.');if(e.type==='daily'&&amount>db.personalBalance+.001)return alert('Personal Cash is not enough.');let left=amount,allocations=[];for(const day of due){if(left<=.001)break;const take=Math.min(left,day.remaining);if(take>.001){allocations.push({date:day.date,amount:take});left-=take;}}if(Math.abs(left)>.001)return alert('Could not allocate the full payment to selected dates.');const payment={id:crypto.randomUUID(),employeeId:id,amount,date,recordedAt:new Date().toISOString(),allocations,source:'Personal Cash'};db.payments.push(payment);if(e.type==='daily')addCashTransaction('personal','expense','Employee payment to staff',amount,e.name+' · '+allocations.map(a=>a.date).join(', '),date,'Employee payment');save();$('paymentAmount').value='';render();renderPendingSalary();renderEmployeePendingSummary();if(e.phone)openEmployeeWhatsApp(e,paymentWhatsAppMessage(e,payment));else alert('ادائیگی محفوظ ہوگئی۔ WhatsApp بھیجنے کے لیے ملازم کے پروفائل میں فون نمبر درج کریں۔');};
+function paymentHistory(){$('paymentRows').innerHTML=[...db.payments].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>`<tr><td>${esc(emp(p.employeeId)?.name||'Deleted employee')}</td><td>${money(p.amount)}</td><td>${new Date(p.date).toLocaleString()}</td><td>${p.recordedAt?new Date(p.recordedAt).toLocaleString():'—'}</td><td>${(p.allocations||[]).map(a=>a.date).join(', ')||'—'}</td><td>${esc(p.source||'Personal Cash')}</td><td><button class="btn small light" data-share-payment="${p.id}">Share WhatsApp</button></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No payments recorded.</td></tr>'}
+$('paymentRows').onclick=e=>{const id=e.target.dataset.sharePayment;if(!id)return;const payment=db.payments.find(p=>p.id===id),employee=payment&&emp(payment.employeeId);if(!payment||!employee)return alert('Payment or employee record not found.');openEmployeeWhatsApp(employee,paymentWhatsAppMessage(employee,payment));};
+function tasks(){const date=$('taskDate').value;db.tasks[date] ||= [];const arr=db.tasks[date],done=arr.filter(t=>t.done).length,left=arr.length-done,pct=arr.length?Math.round(done/arr.length*100):0;$('taskTotal').textContent=arr.length;$('taskDone').textContent=done;$('taskLeft').textContent=left;$('taskPercent').textContent=pct+'%';$('taskProgress').style.width=pct+'%';$('taskList').innerHTML=arr.map(t=>`<div class="taskrow"><input type="checkbox" data-task="${t.id}" ${t.done?'checked':''}><div class="taskname" style="${t.done?'text-decoration:line-through;color:#829087':''}">${esc(t.name)}</div><span class="pill ${t.done?'green':'amber'}">${t.done?'Completed':'Pending'}</span><button class="btn small danger" data-taskdel="${t.id}">Remove</button></div>`).join('')||'<div class="empty">No tasks for this date.</div>'}
+$('addTask').onclick=()=>{const name=$('taskName').value.trim();if(!name)return;const date=$('taskDate').value;db.tasks[date] ||= [];db.tasks[date].push({id:crypto.randomUUID(),name,done:false});$('taskName').value='';save();tasks()};
+$('taskList').onchange=e=>{const id=e.target.dataset.task;if(!id)return;const t=(db.tasks[$('taskDate').value]||[]).find(t=>t.id===id);if(t)t.done=e.target.checked;save();tasks()};
+$('taskList').onclick=e=>{const id=e.target.dataset.taskdel;if(!id)return;db.tasks[$('taskDate').value]=(db.tasks[$('taskDate').value]||[]).filter(t=>t.id!==id);save();tasks()};
+function render(){renderEmployees();attendance();payroll();paymentHistory();tasks();completed();if($('personalCashSummary'))$('personalCashSummary').textContent=money(db.personalBalance)+' AED';if($('companyCashSummary'))$('companyCashSummary').textContent=money(db.companyBalance)+' AED';renderCashBook();if(!$('realCashContent').classList.contains('hidden'))renderRealCash();}
+
+// Extended Project Two preview features
+let salaryType='daily';
+function completed(){const date=$('completeDate').value,done=db.attendance[date]||[],activeCount=db.employees.filter(e=>(!e.start||e.start<=date)&&(!e.end||e.end>=date)).length,daily=done.filter(id=>emp(id)?.type==='daily'),monthly=done.filter(id=>emp(id)?.type==='monthly'),absent=(db.absences?.[date]||[]);const personRow=(employee,status,share='')=>`<div class="taskrow"><div class="employee">${employee?.photo?`<img class="avatar" src="${employee.photo}" alt="">`:`<div class="avatar">${esc((employee?.name||'?').slice(0,1).toUpperCase())}</div>`}<div><b>${esc(employee?.name||'Unknown')}</b><div class="muted">${esc(employee?.phone||'')}</div></div></div><span class="pill ${status==='Present'?'green':'amber'}">${status}</span>${share}</div>`;const renderList=ids=>ids.map(id=>personRow(emp(id),'Present')).join('')||'<div class="empty">No records</div>';$('completeDaily').innerHTML=renderList(daily);$('completeMonthly').innerHTML=renderList(monthly);$('completeDailyCount').textContent=daily.length;$('completeMonthlyCount').textContent=monthly.length;$('completeAbsentCount').textContent=absent.length;$('completeTotalCount').textContent=activeCount;$('completePresentCount').textContent=done.length;$('completeAbsentSummary').textContent=absent.length;$('completeDailyCount').title='Present daily employees';$('completeAbsentCount').title='Absent employees';$('completeAbsent').innerHTML=absent.map(a=>{const employee=emp(a.id);const share=employee?.phone?`<button class="btn small light" data-share-absent="${a.id}">Share WhatsApp</button>`:'<span class="muted">Phone missing</span>';return personRow(employee,'Absent',share)}).join('')||'<div class="empty">No absent records</div>'}
+$('completeAbsent').onclick=e=>{const id=e.target.dataset.shareAbsent;if(!id)return;const employee=emp(id),date=$('completeDate').value;if(employee)openEmployeeWhatsApp(employee,absentWhatsAppMessage(employee,date));};
+function salaryRender(){if($('salaryContent').classList.contains('hidden'))return;const list=db.employees.filter(e=>e.type===salaryType);$('salaryTypeLabel').textContent=salaryType==='daily'?'Daily Employees':'Monthly Employees';$('salaryRows').innerHTML=list.map(e=>`<tr><td><input id="editName_${e.id}" value="${esc(e.name)}" style="min-width:120px"></td><td><input id="editPhone_${e.id}" value="${esc(e.phone||'')}" style="min-width:120px"></td><td>${money(e.salary)}</td><td><input type="number" min="0" step=".01" id="newSalary_${e.id}" value="${e.salary}" style="min-width:100px"></td><td><select id="editType_${e.id}"><option value="daily" ${e.type==='daily'?'selected':''}>Daily</option><option value="monthly" ${e.type==='monthly'?'selected':''}>Monthly</option></select></td><td><button class="btn small primary" data-savesalary="${e.id}">Save</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No employees in this category.</td></tr>'}
+function renderRealCash(){if($('realCashContent').classList.contains('hidden'))return;db.realCashAccounts ||= [];db.realCashHistory ||= [];$('realCashAccounts').innerHTML=db.realCashAccounts.map(a=>`<div class="taskrow"><b>${esc(a.name)}</b><span class="balance-big" style="color:${Number(a.balance)<0?'var(--red)':'var(--green)'}">${money(a.balance)}</span></div>`).join('')||'<div class="empty">Add your first bank or cash category.</div>';$('realCashTotal').textContent=money(db.realCashAccounts.reduce((n,a)=>n+Number(a.balance||0),0));$('realCashAccount').innerHTML=db.realCashAccounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');$('realCashHistory').innerHTML='<h3>Manual Bank / Cash Ledger</h3><div class="tablewrap"><table><thead><tr><th>Date</th><th>Account</th><th>Details</th><th>Plus</th><th>Minus</th><th>Balance after</th></tr></thead><tbody>'+db.realCashHistory.slice().reverse().map(h=>`<tr><td>${esc(h.date||'')}</td><td>${esc(h.name)}</td><td>${esc(h.details||'—')}</td><td>${h.action==='add'?money(h.amount):'—'}</td><td>${h.action==='subtract'?money(h.amount):'—'}</td><td>${h.balanceAfter==null?'—':money(h.balanceAfter)}</td></tr>`).join('')+'</tbody></table></div>'}
+$('salaryUnlock').onclick=()=>{const pin=$('salaryPin').value;if(!/^\d{4,8}$/.test(pin))return alert('PIN must be 4 to 8 digits.');if(!db.ownerPin){db.ownerPin=pin;save()}else if(db.ownerPin!==pin)return alert('Incorrect PIN.');$('salaryLock').classList.add('hidden');$('salaryContent').classList.remove('hidden');salaryRender()};
+document.querySelectorAll('[data-salary-type]').forEach(b=>b.onclick=()=>{salaryType=b.dataset.salaryType;salaryRender()});
+$('salaryRows').onclick=e=>{const id=e.target.dataset.savesalary;if(!id)return;const value=Number($('newSalary_'+id).value),employee=emp(id);if(!(value>0)||!employee)return alert('Enter a valid salary.');employee.salary=value;employee.name=$('editName_'+id).value.trim()||employee.name;employee.phone=$('editPhone_'+id).value.trim();employee.type=$('editType_'+id).value;save();render();salaryRender();alert('Employee details and salary updated.')};
+$('realCashUnlock').onclick=()=>{const pin=$('realCashPin').value;if(!/^\d{4,8}$/.test(pin))return alert('PIN must be 4 to 8 digits.');if(!db.ownerPin){db.ownerPin=pin;save()}else if(db.ownerPin!==pin)return alert('Incorrect PIN.');$('realCashLock').classList.add('hidden');$('realCashContent').classList.remove('hidden');renderRealCash()};
+$('addRealAccount').onclick=()=>{const name=$('realCashName').value.trim(),balance=Number($('realCashBalance').value);if(!name||!Number.isFinite(balance))return alert('Enter category name and balance.');db.realCashAccounts ||= [];db.realCashAccounts.push({id:crypto.randomUUID(),name,balance});$('realCashName').value='';$('realCashBalance').value='';save();renderRealCash()};
+$('realCashSave').onclick=()=>{const a=(db.realCashAccounts||[]).find(x=>x.id===$('realCashAccount').value),amount=Number($('realCashAmount').value),action=$('realCashAction').value,date=$('realCashDate').value||localDateTime(),details=$('realCashNote').value.trim();if(!a||!(amount>0)||!Number.isFinite(amount))return alert('Select account and enter a valid amount.');a.balance+=action==='add'?amount:-amount;db.realCashHistory ||= [];db.realCashHistory.push({id:crypto.randomUUID(),accountId:a.id,name:a.name,amount,action,date,details,balanceAfter:a.balance});save();$('realCashAmount').value='';$('realCashNote').value='';renderRealCash()};
+function ensureCashCategories(){db.cashCategories ||= {company:{income:['Sales / آمدن','Other income'],expense:['Purchase','Rent','Transport','Other expense']},personal:{income:['Personal income','Other income'],expense:['Personal expense','Other expense']}};for(const a of ['company','personal']){db.cashCategories[a] ||= {income:[],expense:[]};db.cashCategories[a].income ||= [];db.cashCategories[a].expense ||= [];if(Array.isArray(db.cashCategories[a].add))db.cashCategories[a].income=[...new Set([...db.cashCategories[a].income,...db.cashCategories[a].add])];if(Array.isArray(db.cashCategories[a].subtract))db.cashCategories[a].expense=[...new Set([...db.cashCategories[a].expense,...db.cashCategories[a].subtract])];}}
+function renderCashCategories(){ensureCashCategories();const a=$('cashType').value,action=$('cashAction').value,k=action==='add'?'income':'expense',list=db.cashCategories[a][k]||[];$('cashCategory').innerHTML=list.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');renderCategoryChips()}
+function renderCategoryChips(){ensureCashCategories();const a=$('categoryAccount').value;const list=[...new Set([...(db.cashCategories[a].income||[]),...(db.cashCategories[a].expense||[])])];$('cashCategoryChips').innerHTML=list.map(name=>`<span class="category-chip">${esc(name)} <button type="button" title="Delete category" data-del-category="${encodeURIComponent(name)}" aria-label="Delete ${esc(name)}">×</button></span>`).join('')||'<span class="muted">No categories added yet.</span>';}
+function cashLedgerRows(){const filter=$('cashHistoryAccount')?.value||'all',date=$('cashLedgerDate')?.value||today(),all=(db.cashTransactions||[]).slice();const calculated=new Map();for(const account of ['company','personal']){const balanceKey=account==='company'?'companyBalance':'personalBalance',items=all.filter(x=>x.account===account).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));const signed=items.reduce((n,x)=>n+(x.kind==='income'?1:-1)*Number(x.amount||0),0);let balance=round2(Number(db[balanceKey]||0)-signed);for(const x of items){balance=round2(balance+(x.kind==='income'?1:-1)*Number(x.amount||0));calculated.set(x.id,balance);}}return all.filter(x=>(filter==='all'||x.account===filter)&&String(x.date||'').slice(0,10)===date).sort((a,b)=>String(a.date).localeCompare(String(b.date))).map(x=>({...x,balanceAfter:calculated.get(x.id)??x.balanceAfter}));}
+function renderCashBook(){renderCashCategories();const rows=cashLedgerRows();$('cashHistoryRows').innerHTML=rows.slice().reverse().map(x=>`<tr><td>${new Date(x.date).toLocaleString()}</td><td>${x.account==='company'?'Company':'Personal'}</td><td>${x.kind==='income'?'＋ Income':'− Expense'}</td><td>${esc(x.category)}</td><td>${esc(x.details||'—')}</td><td>${money(x.amount)}</td><td>${money(x.balanceAfter)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No cash book entries for selected date.</td></tr>'}
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function exportDailyCashExcel(){const date=$('cashLedgerDate').value||today(),rows=cashLedgerRows(),head=['Date & Time','Account','Type','Category','Details','Amount AED','Balance After AED'];const lines=[head,...rows.map(x=>[x.date,x.account==='company'?'Company':'Personal',x.kind==='income'?'Income':'Expense',x.category,x.details,x.amount,x.balanceAfter])].map(r=>r.map(csvCell).join(',')).join('\r\n');const blob=new Blob(['\ufeff'+lines],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='JAAT_Cash_Ledger_'+date+'.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)}
+function shareDailyCashWhatsApp(){const date=$('cashLedgerDate').value||today(),rows=cashLedgerRows();if(!rows.length)return alert('No cash ledger entries for the selected date.');const totalIn=rows.filter(x=>x.kind==='income').reduce((n,x)=>n+Number(x.amount||0),0),totalOut=rows.filter(x=>x.kind==='expense').reduce((n,x)=>n+Number(x.amount||0),0);const lines=rows.map(x=>`${x.account==='company'?'Company':'Personal'} | ${x.kind==='income'?'+':'−'}${money(x.amount)} | ${x.category} | ${x.details||''}`);const msg=`JAAT — Daily Cash Ledger\nDate: ${date}\n\n${lines.join('\n')}\n\nTotal Income: AED ${money(totalIn)}\nTotal Expenses: AED ${money(totalOut)}\nNet Movement: AED ${money(totalIn-totalOut)}`;window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener')}
+$('cashExportExcel').onclick=exportDailyCashExcel;$('cashShareWhatsApp').onclick=shareDailyCashWhatsApp;$('cashLedgerDate').onchange=renderCashBook;
+$('saveOpeningCash').onclick=()=>{if(db.openingBalancesSet||((db.cashTransactions||[]).length>0)||Number(db.companyBalance)!==0||Number(db.personalBalance)!==0){$('openingCashStatus').textContent='Opening balances are already established. Existing records were not changed.';return}const personal=Number($('openingPersonal').value||0),company=Number($('openingCompany').value||0);if(!Number.isFinite(personal)||!Number.isFinite(company))return alert('Enter valid opening balances.');if(personal!==0)addCashTransaction('personal',personal>0?'income':'expense','Opening Balance',Math.abs(personal),'Personal opening balance',today()+'T00:00','Opening Balance');if(company!==0)addCashTransaction('company',company>0?'income':'expense','Opening Balance',Math.abs(company),'Company opening balance',today()+'T00:00','Opening Balance');db.openingBalancesSet=true;save();$('openingCashStatus').textContent='Opening cash saved.';render()};
+$('cashType').onchange=renderCashCategories;$('cashAction').onchange=renderCashCategories;$('categoryAccount').onchange=renderCategoryChips;$('cashCategoryChips').onclick=e=>{const b=e.target.closest('[data-del-category]');if(!b)return;const name=decodeURIComponent(b.dataset.delCategory),account=$('categoryAccount').value;if(!confirm('Delete category "'+name+'"? Existing cash history will remain unchanged.'))return;for(const k of ['income','expense'])db.cashCategories[account][k]=(db.cashCategories[account][k]||[]).filter(x=>x!==name);save();renderCashCategories()};$('cashIncomeMode').onclick=()=>{$('cashAction').value='add';renderCashCategories()};$('cashExpenseMode').onclick=()=>{$('cashAction').value='subtract';renderCashCategories()};$('cashHistoryAccount').onchange=renderCashBook;
+$('saveCashCategory').onclick=()=>{const name=$('cashNewCategory').value.trim(),account=$('categoryAccount').value;if(!name)return alert('Enter a category name.');ensureCashCategories();for(const k of ['income','expense'])if(!db.cashCategories[account][k].includes(name))db.cashCategories[account][k].push(name);save();$('cashNewCategory').value='';renderCashCategories();$('cashType').value=account;$('cashCategory').value=name;renderCategoryChips();};
+$('cashSave').onclick=()=>{const amount=Number($('cashAmount').value),account=$('cashType').value,action=$('cashAction').value,kind=action==='add'?'income':'expense',category=$('cashCategory').value,date=$('cashDate').value,details=$('cashNote').value.trim();if(!(amount>0)||!category||!date)return alert('Select category and enter amount and date/time.');addCashTransaction(account,kind,category,amount,details,date);save();$('cashAmount').value='';$('cashNote').value='';render();alert('Cash book entry saved.')};
+$('completeDate').addEventListener('change',completed);
+
+const now=new Date(),month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;['attDate','taskDate','completeDate'].forEach(id=>$(id).value=today());$('payMonth').value=month;$('paymentDate').value=localDateTime();$('cashDate').value=localDateTime();if($('cashLedgerDate'))$('cashLedgerDate').value=today();if($('realCashDate'))$('realCashDate').value=localDateTime();
+['attDate','taskDate','payMonth','completeDate'].forEach(id=>$(id).addEventListener('change',render));
+function backupPayload(data=db){return {app:'JAAT — Chart of Accounts',formatVersion:1,createdAt:new Date().toISOString(),data};}
+const AUTO_BACKUP_DB='JAAT_Auto_Backup_DB',AUTO_BACKUP_STORE='dailySnapshots';let autoBackupDbPromise;
+function openAutoBackupDb(){if(!('indexedDB' in window))return Promise.reject(new Error('IndexedDB unavailable'));if(!autoBackupDbPromise)autoBackupDbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(AUTO_BACKUP_DB,1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(AUTO_BACKUP_STORE))d.createObjectStore(AUTO_BACKUP_STORE,{keyPath:'date'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));});return autoBackupDbPromise;}
+async function saveDailyAutoBackup(force=false){try{const d=await openAutoBackupDb(),date=today(),tx=d.transaction(AUTO_BACKUP_STORE,'readwrite'),store=tx.objectStore(AUTO_BACKUP_STORE),existing=await new Promise((resolve,reject)=>{const q=store.get(date);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});store.put({date,createdAt:new Date().toISOString(),payload:backupPayload()});await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Backup transaction aborted'));});const trim=d.transaction(AUTO_BACKUP_STORE,'readwrite'),all=await new Promise((resolve,reject)=>{const q=trim.objectStore(AUTO_BACKUP_STORE).getAll();q.onsuccess=()=>resolve(q.result||[]);q.onerror=()=>reject(q.error)});all.sort((a,b)=>b.date.localeCompare(a.date)).slice(14).forEach(x=>trim.objectStore(AUTO_BACKUP_STORE).delete(x.date));await new Promise((resolve,reject)=>{trim.oncomplete=resolve;trim.onerror=()=>reject(trim.error)});$('autoBackupDate').textContent=date+' (اس ڈیوائس پر محفوظ)';return true;}catch(err){const el=$('autoBackupDate');if(el)el.textContent='خودکار بیک اَپ دستیاب نہیں؛ دستی بیک اَپ بنائیں';return false;}}
+let autoBackupQueued=false;function queueDailyAutoBackup(){if(autoBackupQueued)return;autoBackupQueued=true;setTimeout(()=>{autoBackupQueued=false;saveDailyAutoBackup();},0);}
+async function getLatestAutoBackup(){const d=await openAutoBackupDb(),tx=d.transaction(AUTO_BACKUP_STORE,'readonly'),all=await new Promise((resolve,reject)=>{const q=tx.objectStore(AUTO_BACKUP_STORE).getAll();q.onsuccess=()=>resolve(q.result||[]);q.onerror=()=>reject(q.error)});return all.sort((a,b)=>b.date.localeCompare(a.date))[0]||null;}
+function downloadBackup(){const payload=backupPayload(),blob=new Blob([JSON.stringify(payload)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');const stamp=new Date().toISOString().replace(/[:.]/g,'-');a.href=url;a.download='JAAT_FULL_BACKUP_'+stamp+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);$('backupLastDate').textContent=new Date().toLocaleString();$('backupStatus').textContent='Backup file تیار ہے۔ اسے Downloads سے کسی محفوظ جگہ پر بھی محفوظ کر لیں۔';}
+$('createBackup').onclick=downloadBackup;
+$('downloadAutoBackup').onclick=async()=>{try{const item=await getLatestAutoBackup();if(!item)return alert('ابھی خودکار بیک اَپ موجود نہیں۔');const blob=new Blob([JSON.stringify(item.payload)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='JAAT_AUTO_BACKUP_'+item.date+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);$('backupStatus').textContent='خودکار بیک اَپ فائل Download ہوگئی۔';}catch(e){alert('خودکار بیک اَپ دستیاب نہیں۔')}};
+$('restoreAutoBackup').onclick=async()=>{try{const item=await getLatestAutoBackup();if(!item)return alert('کوئی خودکار بیک اَپ موجود نہیں۔');if(!confirm('آخری خودکار بیک اَپ '+item.date+' سے موجودہ JAAT ڈیٹا تبدیل ہوگا۔ پہلے موجودہ ڈیٹا کا بیک اَپ بنا لیں۔ جاری رکھیں؟'))return;const incoming=item.payload.data;db=incoming;db.employees||=[];db.attendance||={};db.payments||=[];db.tasks||={};db.accruals||={};db.cashTransactions||=[];save();render();updateBackupSummary();$('backupStatus').textContent='خودکار بیک اَپ سے ڈیٹا Restore ہوگیا۔';}catch(e){alert('خودکار بیک اَپ Restore نہیں ہو سکا۔')}};
+$('shareBackup').onclick=async()=>{const payload=backupPayload(),file=new File([JSON.stringify(payload)],'JAAT_FULL_BACKUP.json',{type:'application/json'});try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'JAAT Full Backup',text:'JAAT complete data backup'});$('backupStatus').textContent='Share menu کھل گیا ہے۔ محفوظ جگہ منتخب کریں۔';}else{downloadBackup();}}catch(err){if(err.name!=='AbortError'){$('backupStatus').textContent='Share دستیاب نہیں؛ Backup فائل Download کریں۔';downloadBackup();}}};
+$('chooseRestore').onclick=()=>$('restoreBackupFile').click();
+$('restoreBackupFile').onchange=e=>{const file=e.target.files&&e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const parsed=JSON.parse(reader.result),incoming=parsed&&parsed.data?parsed.data:parsed;if(!incoming||!Array.isArray(incoming.employees)||typeof incoming.attendance!=='object'||!Array.isArray(incoming.payments))throw new Error('invalid');if(!confirm('Restore کرنے سے موجودہ JAAT ڈیٹا منتخب بیک اَپ سے تبدیل ہوگا۔ کیا آپ نے موجودہ ڈیٹا کا بیک اَپ بنا لیا ہے اور آگے بڑھنا چاہتے ہیں؟'))return;db=incoming;db.employees||=[];db.attendance||={};db.payments||=[];db.tasks||={};db.accruals||={};db.cashTransactions||=[];save();$('backupStatus').textContent='Backup کامیابی سے Restore ہو گیا۔';render();updateBackupSummary();}catch(err){alert('یہ JAAT کا درست Backup نہیں ہے یا فائل خراب ہے۔ موجودہ ڈیٹا تبدیل نہیں کیا گیا۔');}finally{e.target.value='';}};reader.readAsText(file);};
+function updateBackupSummary(){$('backupRecordCount').textContent=db.employees.length+' employees · '+Object.keys(db.attendance).length+' attendance dates · '+db.payments.length+' payments';}
+render();updateBackupSummary();refreshStorageInfo();saveDailyAutoBackup();if(db.openingBalancesSet||(db.cashTransactions||[]).length>0||Number(db.companyBalance)!==0||Number(db.personalBalance)!==0){$('openingCashStatus').textContent='Opening balances are already established; existing cash history is protected.';$('saveOpeningCash').disabled=true;}renderPendingSalary();renderEmployeePendingSummary();
+})();
+</script>
+</body>
+</html>
