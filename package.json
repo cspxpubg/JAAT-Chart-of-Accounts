@@ -1,0 +1,17 @@
+
+{
+  "name": "jaat-chart-of-accounts",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo Static HTML app"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.3"
+  }
+}
